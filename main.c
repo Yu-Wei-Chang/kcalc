@@ -116,8 +116,39 @@ noinline int user_func_nop(struct expr_func *f, vec_expr_t args, void *c)
     return 0;
 }
 
+noinline int kfib(int n)
+{
+    pr_info("%d %s(): Unpatch function called!, n [%d]\n", __LINE__,
+            __FUNCTION__, n);
+    return 0;
+}
+
+void user_func_fib_cleanup(struct expr_func *f, void *c)
+{
+    /* suppress compilation warnings */
+    (void) f;
+    (void) c;
+}
+
+int user_func_fib(struct expr_func *f, vec_expr_t args, void *c)
+{
+    int n = 0;
+
+    if (args.len == 0) {
+        pr_info("%d %s(): Index value of Fibonacci sequenc needed!\n", __LINE__,
+                __FUNCTION__);
+        return -1;
+    }
+
+    n = expr_eval(&vec_peek(&args));
+    kfib(n);
+
+    return 0;
+}
+
 static struct expr_func user_funcs[] = {
     {"nop", user_func_nop, user_func_nop_cleanup, 0},
+    {"fib", user_func_fib, user_func_fib_cleanup, 1},
     {NULL, NULL, NULL, 0},
 };
 

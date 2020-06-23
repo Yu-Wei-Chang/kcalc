@@ -28,6 +28,35 @@ int livepatch_nop(struct expr_func *f, vec_expr_t args, void *c)
     return 0;
 }
 
+noinline int livepatch_kfib(int n)
+{
+    /* The position of the highest bit of n. */
+    /* So we need to loop `rounds` times to get the answer. */
+    int rounds = 0;
+    int a = 0, b = 1; /* F(0), F(1) */
+    for (int i = n; i; ++rounds, i >>= 1)
+        ;
+
+    for (int i = rounds; i > 0; i--) {
+        int t1, t2;
+        /* F(2n) = F(n)[2F(n+1) − F(n)] */
+        t1 = a * (2 * b - a);
+
+        /* F(2n+1) = F(n+1)^2 + F(n)^2 */
+        t2 = b * b + a * a;
+
+        if ((n >> (i - 1)) & 1) {
+            a = t2;      /* Threat F(2n+1) as F(n) next round. */
+            b = t1 + t2; /* Threat F(2n) + F(2n+1) as F(n+1) next round. */
+        } else {
+            a = t1; /* Threat F(2n) as F(n) next round. */
+            b = t2; /* Threat F(2n+1) as F(n+1) next round. */
+        }
+    }
+    pr_info("%d %s(): n [%d], fib [%d]\n", __LINE__, __FUNCTION__, n, a);
+    return a;
+}
+
 /* clang-format off */
 static struct klp_func funcs[] = {
     {
@@ -37,6 +66,10 @@ static struct klp_func funcs[] = {
     {
         .old_name = "user_func_nop_cleanup",
         .new_func = livepatch_nop_cleanup,
+    },
+    {
+        .old_name = "kfib",
+        .new_func = livepatch_kfib,
     },
     {},
 };
