@@ -53,7 +53,7 @@ noinline int livepatch_kfib(int n)
             b = t2; /* Threat F(2n+1) as F(n+1) next round. */
         }
     }
-    pr_info("%d %s(): n [%d], fib [%d]\n", __LINE__, __FUNCTION__, n, a);
+
     return a;
 }
 

@@ -133,17 +133,32 @@ void user_func_fib_cleanup(struct expr_func *f, void *c)
 int user_func_fib(struct expr_func *f, vec_expr_t args, void *c)
 {
     int n = 0;
+    int frac, num, fib;
 
     if (args.len == 0) {
-        pr_info("%d %s(): Index value of Fibonacci sequenc needed!\n", __LINE__,
-                __FUNCTION__);
+        pr_info("Index value of Fibonacci sequenc needed!\n");
         return -1;
     }
 
     n = expr_eval(&vec_peek(&args));
-    kfib(n);
 
-    return 0;
+    /* Convert MathEX fixed-point representation to integer */
+    frac = GET_FRAC(n);
+    num = GET_NUM(n);
+
+    if ((frac < 0) || (num < 0) || isNan(n)) {
+        pr_info("Invalid index value of Fibonacci sequenc!\n");
+        return -1;
+    }
+
+    while (frac--) {
+        num *= 10;
+    }
+
+    fib = kfib(num);
+
+    /* Convert normal integer representation back to MathEX fixed-point */
+    return FP2INT(fib, 0);
 }
 
 static struct expr_func user_funcs[] = {

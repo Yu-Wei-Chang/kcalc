@@ -6,10 +6,14 @@
 #include <linux/module.h>
 #include <linux/string.h>
 
+/* Move to header file due to kfib() needs to use these MACROs */
+#if 0
 #define GET_NUM(n) ((n) >> 4)
 #define NAN_INT ((1 << 4) | ((1 << 4) - 1))
 #define INF_INT ((1 << 5) | ((1 << 4) - 1))
 #define MASK(n) (((n) > 0) << 4)
+#endif
+
 /*
  * LSB 4 bits for precision, 2^3, one for sign
  * MSB 28 bits for integer
@@ -20,7 +24,7 @@
  * Expression data types
  */
 
-static int GET_FRAC(int n)
+int GET_FRAC(int n)
 {
     int x = n & 15;
     if (x & 8)
@@ -29,7 +33,7 @@ static int GET_FRAC(int n)
     return x;
 }
 
-static int FP2INT(int n, int d)
+int FP2INT(int n, int d)
 {
     while (n && n % 10 == 0) {
         ++d;
@@ -43,7 +47,7 @@ static int FP2INT(int n, int d)
     return ((n << 4) | (d & 15));
 }
 
-static int isNan(int x)
+int isNan(int x)
 {
     return GET_FRAC(x) == GET_FRAC(NAN_INT);
 }

@@ -154,6 +154,15 @@ struct expr *expr_create(const char *s,
 
 void expr_destroy(struct expr *e, struct expr_var_list *vars);
 
+/* Expose some static functions and MACROs which needed by kfib() */
+#define GET_NUM(n) ((n) >> 4)
+#define NAN_INT ((1 << 4) | ((1 << 4) - 1))
+#define INF_INT ((1 << 5) | ((1 << 4) - 1))
+#define MASK(n) (((n) > 0) << 4)
+int GET_FRAC(int n);
+int isNan(int x);
+int FP2INT(int n, int d);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
