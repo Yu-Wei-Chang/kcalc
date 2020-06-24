@@ -13,6 +13,23 @@ test_op() {
     fromfixed $(cat $CALC_DEV)
 }
 
+test_fib() {
+    local fib_seq=(0 1 1 2 3 5 8 13 21 34 55 89 144
+        233 377 610 987 1597 2584 4181 6765 10946
+	17711 28657 46368 75025 121393 196418 317811
+	514229 832040 1346269 2178309 3524578 5702887
+	9227465 14930352 24157817 39088169 63245986
+	102334155 165580141)
+    for i in ${!fib_seq[*]}
+    do
+        echo "Testing fib("$i")..."
+	echo -ne "fib("$i")\0" > $CALC_DEV
+	if [ $(fromfixed $(cat $CALC_DEV)) != ${fib_seq[$i]} ]; then
+	    echo "Failed! Fib("$i") should be "${fib_seq[$i]}
+	fi
+    done
+}
+
 if [ "$EUID" -eq 0 ]
   then echo "Don't run this script as root"
   exit
@@ -77,6 +94,10 @@ sleep 1
 echo "livepatch was applied"
 test_op 'nop()'
 dmesg | tail -n 6
+
+echo "Testing Fibonacci sequence..."
+test_fib
+
 echo "Disabling livepatch..."
 sudo sh -c "echo 0 > /sys/kernel/livepatch/livepatch_calc/enabled"
 sleep 2
